@@ -24,11 +24,9 @@ offsetToStartLokkingForFirstColumn = 60
 printCoordinatesArray = False
 # Sometimes not all colors can be found
 printAllColorsIncludingMissing = False
-showBoardScreenshot = True
-
+showBoardScreenshot = False
 # to read pixels pisition and color on screen you can use this in a python3 session: 
 # pyautogui.displayMousePosition()
-
 
 
 print("Trying to find the game area on the screen automatically.")
@@ -61,26 +59,16 @@ print("gameAreaHeight", gameAreaHeight)
 print("gameAreaStepsOfJewelsX", gameAreaStepsOfJewelsX)
 print("gameAreaStepsOfJewelsY", gameAreaStepsOfJewelsY)
 
-# regionGameArea = pyautogui.locateOnScreen("region_playing_field.png", confidence=0.7, grayscale=True)
 
 bboxGameArea = bbox=(upperLeftCorner.x, upperLeftCorner.y, lowerRightCorner.x, lowerRightCorner.y)
 debugImage = ImageGrab.grab(bboxGameArea)
-debugImagePixels = debugImage.load()
+debugImagePixels = debugImage.load() # The load function transforms the image into a list of pixels
 
 def getImage():
     return ImageGrab.grab(bboxGameArea)
 
-# The load function transforms the image into a list of pixels
-# pixels = grabbedImage.load()
-# grabbedImage.save("test.png")
-# Image.open("test.png").show()
-# print(grabbedImage[4, 4])
-# print("steplength {}", int(regionGameArea.width / 8))
-
-stateOfGrid = []
 stateOfGridDict = defaultdict(list)
 stateOfGridAll = []
-#{}
 debugStateOfGridColors = []
 debugStateOfGridPositions = []
 possibleMoves = defaultdict(list)
@@ -122,29 +110,22 @@ def updateBoardView():
     for y in range(offsetToStartLokkingForFirstRow, gameAreaHeight, int(gameAreaStepsOfJewelsX)): # loop through each row 
         rowDebug = []
         rowPos = []
-        row = []
         for x in range(offsetToStartLokkingForFirstColumn, gameAreaWidth, int(gameAreaStepsOfJewelsY)): # and each cell/column of this row
             color = pixels[x, y]
-            # print("Color", color, "in row", rowNumber, "and cell nr.", columnNumber, "I see this as", getColorSymbol(color))
             rowDebug.append(getColorSymbol(color))
-            jewelInformationOld = [getColorSymbol(color), x, y, rowNumber, columnNumber]
-            #location2 = " ".join(str(rowNumber), ".",str(columnNumber))
-            locationString = f'{str(columnNumber)}.{str(rowNumber)}'
             jewelInformation = {"color": getColorSymbol(color), "x": columnNumber, "y": rowNumber, "screenX": x, "screenY": y}
-            #jewelInformation = {"row": rowNumber, "column": columnNumber}
-            
-            row.append(jewelInformationOld)
+                      
             stateOfGridDict[getColorSymbol(color)].append(jewelInformation)
             stateOfGridAll.append(jewelInformation)
-            # For debugging this come in very handy as it shows the position where the pixel is taken from 
-            # 
-            debugImagePixels[x, y] = (255, 255, 255)
-            print("debugImagePixels[x, y]",debugImagePixels[x, y])
+            
+            locationString = f'{str(columnNumber)}.{str(rowNumber)}'
+            rowPos.append(locationString)
+            
+            debugImagePixels[x, y] = (255, 255, 255) # For debugging this is very handy as it shows the position where the pixel is taken from 
+            
             columnNumber += 1
             getAdditionalColors(color)
-            rowPos.append(locationString)
         rowNumber += 1
-        stateOfGrid.append(row)
         debugStateOfGridColors.append(rowDebug)
         debugStateOfGridPositions.append(rowPos)
         columnNumber = 0
@@ -161,292 +142,6 @@ def clickAt(x,y):
 def moveMouseTo(x,y):
     pyautogui.moveTo(addXOffset(x),addYOffset(y), duration=0.1)
 
-def findMatches():
-    # print("Filter", stateOfGrid.filter(lambda: x))
-    #for y in range(9):
-    #    print("y", y)
-    #for y in range(9):
-    #    print("y2", y)
-    #    for x in range(9):
-    #        print("x,y3",y,x)
-#    for y in range(0, len(stateOfGrid), 1):
-#        for x in range(0, len(stateOfGrid[y]), 1):
-    # ROW
-    # stateOfGrid.reverse() # we want to start at the bottom
-    #print("stateOfGrid",stateOfGrid)
-    #print("stateOfGrid",np.array(stateOfGrid))
-    #print("length", len(stateOfGrid))
-    for y in range(8):
-        # print(stateOfGrid[y])
-    #for y in range(len(stateOfGrid)):
-        #print("len(stateOfGrid)", len(stateOfGrid))
-        # cell / column
-        for x in range(8):            
-        #for x in range(len(stateOfGrid[y])):
-            try:
-                #print("x:",x,"y",y)
-                
-                endOfGrid = len(stateOfGrid) - 1
-                # Prevent being out of the grid with boundaries
-                boundaryTop = 0 < y 
-                #print("behind boundary" if not 0 < y  else "before bounudary")
-                #print("behind boundary" if not y < endOfGrid else "before bounudary")
-                boundaryTopPlusOne = 1 < y 
-                boundaryTopPlusTwo = 2 < y 
-                boundaryTopPlusThree = 3 < y 
-                boundaryTopMinusTwo = 0 < y - 2
-                boundaryRight = x < endOfGrid
-                boundaryRightMinusTwo = x < endOfGrid - 2
-                boundaryRightMinusThree = x < endOfGrid - 3
-                boundaryLeft = 0 < x
-                boundaryLeftPlusOne = 1 < x
-                boundaryLeftPlusTwo = 2 < x
-                boundaryBottom = y < endOfGrid
-                boundaryBottomMinusTwo = y < endOfGrid - 1
-                boundaryBottomMinusThree = y < endOfGrid - 2
-
-                currentJewel = stateOfGrid[y][x]
-                
-                oneJewelBefore =   None if not boundaryLeft else stateOfGrid[y][x-1]
-                oneJewelAfter =    None if not boundaryRight else stateOfGrid[y][x+1]
-                oneJewelAbove =    None if not boundaryTop else stateOfGrid[y-1][x]
-                oneJewelBelow =    None if not boundaryBottom else stateOfGrid[y+1][x]
-                twoJewelBefore =   None if not boundaryLeftPlusOne else stateOfGrid[y][x-2]
-                twoJewelAfter =    None if not boundaryRightMinusTwo else stateOfGrid[y][x+2]
-                twoJewelAbove =    None if not boundaryTopPlusTwo else stateOfGrid[y-2][x]
-                twoJewelBelow =    None if not boundaryBottomMinusTwo else stateOfGrid[y+2][x]
-                threeJewelBefore = None if not boundaryLeftPlusTwo else  stateOfGrid[y][x-3]
-                threeJewelAbove =  None if not boundaryTopMinusTwo else  stateOfGrid[y-3][x]
-                #print("boundaryRightMinusThree",boundaryRightMinusThree)
-                #print("boundaryRightMinusTwo",boundaryRightMinusTwo)
-                #print("endOfGrid - 2=",endOfGrid - 2)
-                #print("x+3=",x+3)
-                #print("x + 3 - endOfGrid - 2=", x + 3 - endOfGrid - 2)
-                
-                #print("x + 3 - endOfGrid - 2 < 0 =", x + 3 - endOfGrid - 3 < 0)
-                #print("before boundary" if boundaryRightMinusTwo else "behind bounudary")
-                #print("behind boundary" if not boundaryRightMinusTwo else "before bounudary")
-                #if boundaryRightMinusTwo:
-                #    print("stateOfGrid[y][x+3]",stateOfGrid[y][x+3])
-                #print(" ------ ")
-                threeJewelAfter =  None if not boundaryRightMinusTwo else stateOfGrid[y][x+3]
-                threeJewelBelow =  None if not boundaryBottomMinusThree else stateOfGrid[y+3][x]
-                oneJewelBelowAndOneBefore =    None if not boundaryLeft or not boundaryBottom else stateOfGrid[y+1][x-1]
-                oneJewelBelowAndOneAfter =     None if not boundaryRight or not boundaryTop else stateOfGrid[y+1][x+1]
-                oneJewelAboveAndOneAfter =     None if not boundaryRight or not boundaryBottom else stateOfGrid[y-1][x+1]
-                oneJewelAboveAndOneBefore =    None if not boundaryTop or not boundaryLeft else stateOfGrid[y-1][x-1]
-                twoJewelBelowAndBefore =    None if not boundaryBottomMinusTwo or not boundaryLeftPlusOne else stateOfGrid[y+2][x-1]
-                twoJewelBelowAndAfter =     None if not boundaryBottomMinusTwo or not boundaryRightMinusTwo else stateOfGrid[y+2][x+1]
-                twoJewelAboveAndAfter =     None if not boundaryTopPlusTwo or not boundaryRightMinusTwo else stateOfGrid[y-2][x+1]
-                twoJewelAboveAndBefore =    None if not boundaryTopPlusTwo or not boundaryLeftPlusOne else stateOfGrid[y-2][x-1]
-                oneJewelBelowAndTwoBefore = None if not boundaryBottom or not boundaryLeftPlusTwo else stateOfGrid[y+1][x-2]
-                oneJewelBelowAndTwoAfter =  None if not boundaryBottom or not boundaryRightMinusTwo else stateOfGrid[y+1][x+2]
-                oneJewelAboveAndTwoAfter =  None if not boundaryBottomMinusTwo or not boundaryRightMinusTwo else stateOfGrid[y-1][x+2]
-                oneJewelAboveAndTwoBefore = None if not boundaryBottomMinusTwo or not boundaryRightMinusTwo else stateOfGrid[y-1][x+2]
-                    
-            except IndexError as e:
-                print("IndexError:", e)
-                pass
-
-            try: # I don0t want to fix all the bugs mode ...
-                # print("x:",x,"y",y) 
-                if currentJewel[0] == None:
-                    #print("Found a None, continue")
-                    continue
-
-                # Enable automatic mouse movement for a nice viewing experience or debuggins 
-                # moveMouseTo(currentJewel[1],currentJewel[2])
-
-                #print("currentJewel[0]",currentJewel[0])
-                #print("oneJewelBelow[0]",oneJewelBelow[0])
-                #print("twoJewelBelowAndBefore[0]]",twoJewelBelowAndBefore[0])
-                #print("twoJewelBelow[0]",twoJewelBelow[0])
-
-                # VERTICAL
-                
-                #   this does not work, why??
-                # not wprlmg: tiw vertical, one above and before
-                # vertival two in one column and one below and after
-                # horizpntaö two om a row woth one space between but one bloeww, same for vertical, both sides+
-                # horizontal, tow in a row, then one space and one to the right, left also`???s`
-                
-
-                #  ___X__ 
-                #  ___O__ 
-                #  _O____ 
-                if boundaryLeft and boundaryBottomMinusTwo: # avoid NoneType Errors and improve code readability (could also be in the if statement below)
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == twoJewelBelowAndBefore[0]):
-                        print("Found a match of", currentJewel[0], "twoJewelBelowAndBefore")
-                        clickAt(twoJewelBelowAndBefore[1], twoJewelBelowAndBefore[2])
-                        clickAt(twoJewelBelow[1], twoJewelBelow[2])
-                        return
-
-                #  __X___ 
-                #  __O___ 
-                #  ____O_ 
-                if boundaryRight and boundaryBottomMinusTwo:
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == twoJewelBelowAndAfter[0]):
-                        print("Found a match of", currentJewel[0], "twoJewelBelowAndAfter")
-                        clickAt(twoJewelBelowAndAfter[1], twoJewelBelowAndAfter[2])
-                        clickAt(twoJewelBelow[1], twoJewelBelow[2])
-                        return
-
-                #  __X__ 
-                #  __O__
-                #  _____
-                #  __O__ 
-                if boundaryBottomMinusThree:
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == threeJewelBelow[0]):
-                        print("Found a match of", currentJewel[0], "threeJewelBelow")
-                        clickAt(threeJewelBelow[1], threeJewelBelow[2])
-                        clickAt(twoJewelBelow[1], twoJewelBelow[2])
-                        return
-
-                #  __O__
-                #  _____
-                #  __X__ 
-                #  __O__  
-                if boundaryBottom and boundaryTopMinusTwo:
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == twoJewelAbove[0]):
-                        print("Found a match of", currentJewel[0], "twoJewelAbove")
-                        #print("y",y)
-                        clickAt(twoJewelAbove[1], twoJewelAbove[2])
-                        clickAt(oneJewelAbove[1], oneJewelAbove[2])
-                        return
-
-                #  __X__
-                #  ____O
-                #  __O__
-                if boundaryRight and boundaryBottomMinusTwo:
-                    if (currentJewel[0] == twoJewelBelow[0]) and (currentJewel[0] == oneJewelBelowAndOneAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelBelowAndOneAfter vertical")
-                        clickAt(oneJewelBelowAndOneAfter[1], oneJewelBelowAndOneAfter[2])
-                        clickAt(oneJewelBelow[1], oneJewelBelow[2])
-                        return
-
-                #  __X__
-                #  0____
-                #  __O__
-                if boundaryLeft and boundaryBottomMinusTwo:
-                    if (currentJewel[0] == twoJewelBelow[0]) and (currentJewel[0] == oneJewelBelowAndOneBefore[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelBelowAndOneBefore vertical")
-                        clickAt(oneJewelBelowAndOneBefore[1], oneJewelBelowAndOneBefore[2])
-                        clickAt(oneJewelBelow[1], oneJewelBelow[2])
-                        return
-
-                #  O____
-                #  __X__
-                #  __O__
-                if boundaryTop and boundaryLeft and boundaryBottom:
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == oneJewelAboveAndOneBefore[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelAboveAndOneBefore vertical")
-                        clickAt(oneJewelAboveAndOneBefore[1], oneJewelAboveAndOneBefore[2])
-                        clickAt(oneJewelAbove[1], oneJewelAbove[2])
-                        return
-
-                #  ____O
-                #  _X___
-                #  _O___
-                if boundaryTop and boundaryRight and boundaryBottom:
-                    if (currentJewel[0] == oneJewelBelow[0]) and (currentJewel[0] == oneJewelAboveAndOneAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelAboveAndOneBefore vertical")
-                        clickAt(oneJewelAboveAndOneAfter[1], oneJewelAboveAndOneAfter[2])
-                        clickAt(oneJewelAbove[1], oneJewelAbove[2])
-                        return
-
-
-                # HORZONTAL   
-
-                #  _X_O__
-                #  _____O
-                #print("x-2", x-2, "boundaryRightMinusTwo", boundaryRightMinusTwo, "endOfGrid - 1", endOfGrid - 1,"endOfGrid", endOfGrid)
-                
-                
-                if boundaryRightMinusTwo and boundaryBottom:
-                    #print("currentJewel[0]", currentJewel[0])
-                    #print("oneJewelAfter[0]", oneJewelAfter[0])
-                    #print("stateOfGrid[y+1][x+2]",stateOfGrid[y+1][x+2])
-                    #print("stateOfGrid[y+1]",stateOfGrid[y+1])
-                    #print("stateOfGrid[y+1][x+1]",stateOfGrid[y+1][x+1])
-                    #print("oneJewelBelowAndTwoAfter[0]", oneJewelBelowAndTwoAfter[0])
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == oneJewelBelowAndTwoAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelBelowAndTwoAfter")
-                        clickAt(oneJewelBelowAndTwoAfter[1], oneJewelBelowAndTwoAfter[2])
-                        clickAt(twoJewelAfter[1], twoJewelAfter[2])
-                        return
-
-                #  _____O
-                #  _X_O__
-                if boundaryRightMinusTwo and boundaryTop:
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == oneJewelAboveAndTwoAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelAboveAndTwoAfter")
-                        clickAt(oneJewelAboveAndTwoAfter[1], oneJewelAboveAndTwoAfter[2])
-                        clickAt(twoJewelAfter[1], twoJewelAfter[2])
-                        return
-
-                #  _X_O____0
-                if boundaryRightMinusThree:
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == threeJewelAfter[0]):
-                        print("Found a match of", currentJewel[0], "threeJewelAfter")
-                        clickAt(threeJewelAfter[1], threeJewelAfter[2])
-                        clickAt(twoJewelAfter[1], twoJewelAfter[2])
-                        return
-                
-                #  0___X_O__
-                if boundaryLeftPlusTwo and boundaryRight:
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == twoJewelBefore[0]):
-                        print("Found a match of", currentJewel[0], "twoJewelBefore")
-                        clickAt(twoJewelBefore[1], twoJewelBefore[2])
-                        clickAt(oneJewelBefore[1], oneJewelBefore[2])
-                        return
-
-                #  0______
-                #  __X_O__
-                if boundaryRight and boundaryLeft and boundaryTop:
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == stateOfGrid[y-1][x-1][0]):
-                        print("Found a match of", currentJewel[0], "oneJewelAboveAndOneBefore horizontal")
-                        print("currentJewel[0]",currentJewel[0])
-                        print("oneJewelAfter[0]",oneJewelAfter[0])
-                        print("oneJewelAboveAndOneBefore[0]]",oneJewelAboveAndOneBefore[0])
-                        print("x-2", x-2, "boundaryRightMinusTwo", boundaryRightMinusTwo, "endOfGrid - 1", endOfGrid - 1,"endOfGrid", endOfGrid)
-                        print("stateOfGrid[y-1][x-1]", stateOfGrid[y-1][x-1])
-                        print("stateOfGrid[y-1]", stateOfGrid[y-1])
-                        #print("twoJewelBelow[0]",twoJewelBelow[0])
-                        clickAt( stateOfGrid[y-1][x-1][1],  stateOfGrid[y-1][x-1][2])
-                        clickAt(oneJewelBefore[1], oneJewelBefore[2])
-                        return
-
-                #  __X_O__
-                #  0______                
-                if boundaryLeft and boundaryBottom and boundaryRight:
-                    if (currentJewel[0] == oneJewelAfter[0]) and (currentJewel[0] == oneJewelBelowAndOneBefore[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelBelowAndOneBefore","this is jewel after:",oneJewelAfter[0])
-                        clickAt(oneJewelBelowAndOneBefore[1], oneJewelBelowAndOneBefore[2])
-                        clickAt(oneJewelBefore[1], oneJewelBefore[2])
-                        return
-
-                #  ____O___
-                #  _X_____O
-                if boundaryTop and boundaryRightMinusTwo:
-                    if (currentJewel[0] == twoJewelAfter[0]) and (currentJewel[0] == oneJewelAboveAndOneAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelAboveAndOneAfter")
-                        clickAt(oneJewelAboveAndOneAfter[1], oneJewelAboveAndOneAfter[2])
-                        clickAt(oneJewelAfter[1], oneJewelAfter[2])
-                        return
-
-                #  _X_____O
-                #  ____O___
-                if boundaryBottom and boundaryRightMinusTwo:
-                    if (currentJewel[0] == twoJewelAfter[0]) and (currentJewel[0] == oneJewelBelowAndOneAfter[0]):
-                        print("Found a match of", currentJewel[0], "oneJewelBelowAndOneAfter")
-                        clickAt(oneJewelBelowAndOneAfter[1], oneJewelBelowAndOneAfter[2])
-                        clickAt(oneJewelAfter[1], oneJewelAfter[2])
-                        return
-            except TypeError:
-                #print(TypeError)
-                #print("There is a type error, this means there is a bug somewhere, which I don't want to fix right now")
-                pass
-
 def getJewelByPosition(x, y, jewels):
     for i in range(len(jewels)):
         if jewels[i]["x"] == x and jewels[i]["y"] == y:
@@ -457,7 +152,6 @@ def findPatterns(currentJewel, sameColor):
 
     # {"color": getColorSymbol(color), "x": rowNumber, "y": columnNumber, "screenX": x, "screenY": y}
     
-    #print("currentJewel", currentJewel)
     oneJewelBefore = getJewelByPosition(currentJewel["x"]-1, currentJewel["y"], sameColor)
     oneJewelAfter = getJewelByPosition(currentJewel["x"]+1, currentJewel["y"], sameColor)
     oneJewelAbove = getJewelByPosition(currentJewel["x"], currentJewel["y"]-1, sameColor)
@@ -492,10 +186,9 @@ def findPatterns(currentJewel, sameColor):
     oneJewelBelowAndTwoBefore = getJewelByPosition(currentJewel["x"]-2, currentJewel["y"]+1, sameColor)
     oneJewelAboveAndTwoBefore = getJewelByPosition(currentJewel["x"]-2, currentJewel["y"]-1, sameColor)
     oneJewelAboveAndTwoAfter = getJewelByPosition(currentJewel["x"]+2, currentJewel["y"]-1, sameColor)
-        
-    #print("oneJewelBefore", oneJewelBefore)
-
+    
     # 5
+
     #  ___O__
     #  ___X__  
     #  _O____
@@ -504,7 +197,6 @@ def findPatterns(currentJewel, sameColor):
     if oneJewelAbove and oneJewelBelow and oneJewelBelowAndOneBefore and twoJewelBelow and threeJewelBelow:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]+1, stateOfGridAll)
         possibleMoves[5].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneBefore["screenX"], "moveFromScreenY": oneJewelBelowAndOneBefore["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 5})
-
 
     #  ___O__
     #  ___X__  
@@ -534,6 +226,7 @@ def findPatterns(currentJewel, sameColor):
     #  _____X____  
     #  _O_O___O__
 
+    # toDo: add this pattern
     # same on the other side
 
     # 4
@@ -598,7 +291,6 @@ def findPatterns(currentJewel, sameColor):
         possibleMoves[4].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneBefore["screenX"], "moveFromScreenY": oneJewelBelowAndOneBefore["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 4})
 
 
-
     # 3 
     # VERTICAL
 
@@ -607,11 +299,6 @@ def findPatterns(currentJewel, sameColor):
     #  _O____
     if oneJewelBelow and twoJewelBelowAndOneBefore:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]+2, stateOfGridAll)
-        #print(np.array(debugStateOfGridPositions))
-        #print("current jewl", currentJewel)
-        #print("one jewel below ", oneJewelBelow)
-        #print("twoJewelBelowAndOneBefore",twoJewelBelowAndOneBefore)
-        #print("jewelto move to", jewelToMoveTo,currentJewel["x"], currentJewel["y"]+2)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": twoJewelBelowAndOneBefore["screenX"], "moveFromScreenY": twoJewelBelowAndOneBefore["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
     #  __X___ 
@@ -621,18 +308,12 @@ def findPatterns(currentJewel, sameColor):
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]+2, stateOfGridAll)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": twoJewelBelowAndOneAfter["screenX"], "moveFromScreenY": twoJewelBelowAndOneAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
-
     #  __X__ 
     #  __O__
     #  _____
     #  __O__ 
     if oneJewelBelow and threeJewelBelow:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]+2, stateOfGridAll)
-        #print("current", currentJewel)
-        #print("oneJewelBelow", oneJewelBelow)
-        #print("two below", twoJewelBelow)
-        #print("threeJewelBelow",threeJewelBelow)
-        #print("jewel to move to", jewelToMoveTo, currentJewel["color"], currentJewel["x"], currentJewel["y"]+2, currentJewel["y"]+2)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": threeJewelBelow["screenX"], "moveFromScreenY": threeJewelBelow["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
     #  __O__
@@ -655,10 +336,7 @@ def findPatterns(currentJewel, sameColor):
     #  __O__
     if twoJewelBelow and oneJewelBelowAndOneBefore:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]+1, stateOfGridAll)
-        #print("oneJewelBelowAndOneBefore",oneJewelBelowAndOneBefore)
-        #print("jewelToMoveTo",jewelToMoveTo)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneBefore["screenX"], "moveFromScreenY": oneJewelBelowAndOneBefore["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
-
 
     #  O____
     #  __X__
@@ -690,7 +368,6 @@ def findPatterns(currentJewel, sameColor):
 
     #  _X_O____0
     if oneJewelAfter and threeJewelAfter:
-        #print("Found a match of", currentJewel["color"], "threeJewelAfter")
         jewelToMoveTo = getJewelByPosition(currentJewel["x"]+2, currentJewel["y"], stateOfGridAll)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": threeJewelAfter["screenX"], "moveFromScreenY": threeJewelAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
@@ -720,11 +397,10 @@ def findPatterns(currentJewel, sameColor):
     #  _X_____O
     #  ____O___
     if oneJewelBelowAndOneAfter and twoJewelAfter:
-        #print("Found a match of", currentJewel["color"], "oneJewelBelowAndOneAfter")
         jewelToMoveTo = getJewelByPosition(currentJewel["x"]+1, currentJewel["y"], stateOfGridAll)
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneAfter["screenX"], "moveFromScreenY": oneJewelBelowAndOneAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
-def findMatchesImproved():
+def findMatches():
     for key, sameColor in stateOfGridDict.items() :
         for j in range(len(sameColor)):
             currentJewel = sameColor[j]
@@ -776,7 +452,7 @@ while True:
         print(np.array(debugStateOfGridPositions))
     print(np.array(debugStateOfGridColors))
     print("Moves made so far:", moves)
-    findMatchesImproved()
+    findMatches()
     selectHighestMove()
 
     # To be ready for next iteration
@@ -786,7 +462,6 @@ while True:
     stateOfGridAll = []
     debugStateOfGridPositions = []
     possibleMoves = defaultdict(list)
-    #
     time.sleep(durationBetweenInterations)
 
 
