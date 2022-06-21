@@ -24,7 +24,7 @@ offsetToStartLokkingForFirstColumn = 60
 printCoordinatesArray = False
 # Sometimes not all colors can be found
 printAllColorsIncludingMissing = False
-showBoardScreenshot = False
+showBoardScreenshot = True
 
 # to read pixels pisition and color on screen you can use this in a python3 session: 
 # pyautogui.displayMousePosition()
@@ -64,7 +64,8 @@ print("gameAreaStepsOfJewelsY", gameAreaStepsOfJewelsY)
 # regionGameArea = pyautogui.locateOnScreen("region_playing_field.png", confidence=0.7, grayscale=True)
 
 bboxGameArea = bbox=(upperLeftCorner.x, upperLeftCorner.y, lowerRightCorner.x, lowerRightCorner.y)
-grabbedImage = ImageGrab.grab(bboxGameArea)
+debugImage = ImageGrab.grab(bboxGameArea)
+debugImagePixels = debugImage.load()
 
 def getImage():
     return ImageGrab.grab(bboxGameArea)
@@ -137,7 +138,8 @@ def updateBoardView():
             stateOfGridAll.append(jewelInformation)
             # For debugging this come in very handy as it shows the position where the pixel is taken from 
             # 
-            pixels[x, y] = (255, 255, 255)
+            debugImagePixels[x, y] = (255, 255, 255)
+            print("debugImagePixels[x, y]",debugImagePixels[x, y])
             columnNumber += 1
             getAdditionalColors(color)
             rowPos.append(locationString)
@@ -445,13 +447,8 @@ def findMatches():
                 #print("There is a type error, this means there is a bug somewhere, which I don't want to fix right now")
                 pass
 
-# updateBoardView()
-
-# print (np.array(stateOfGrid))                
-
 def getJewelByPosition(x, y, jewels):
     for i in range(len(jewels)):
-        #print(jewels[i])
         if jewels[i]["x"] == x and jewels[i]["y"] == y:
             return jewels[i]
     return None
@@ -728,13 +725,8 @@ def findPatterns(currentJewel, sameColor):
         possibleMoves[3].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneAfter["screenX"], "moveFromScreenY": oneJewelBelowAndOneAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 3})
 
 def findMatchesImproved():
-    #for colorIndex in stateOfGridDict:
     for key, sameColor in stateOfGridDict.items() :
-        #
-        #print(key)
         for j in range(len(sameColor)):
-        #for j in value:
-            #print("jewel:", sameColor[j])
             currentJewel = sameColor[j]
             if currentJewel["color"] == None:
                 continue
@@ -766,7 +758,8 @@ def selectHighestMove():
         print("Currently no possible moves.")
 
 if showBoardScreenshot:
-    grabbedImage.show()
+    updateBoardView()
+    debugImage.show()
 
 while True:
     k = cv2.waitKey(1) & 0xFF
@@ -795,10 +788,6 @@ while True:
     possibleMoves = defaultdict(list)
     #
     time.sleep(durationBetweenInterations)
-
-# cv2.imshow('window',cv2.cvtColor(np.array(grabbedImage), cv2.COLOR_BGR2RGB))
-
-# printscreen =  np.array(ImageGrab.grab(bbox=(regionGameArea.left, regionGameArea.top, regionGameArea.left + regionGameArea.width, regionGameArea.top + regionGameArea.height)))
 
 
 # Highscores
