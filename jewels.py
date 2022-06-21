@@ -149,8 +149,6 @@ def getJewelByPosition(x, y, jewels):
     return None
 
 def findPatterns(currentJewel, sameColor):
-
-    # {"color": getColorSymbol(color), "x": rowNumber, "y": columnNumber, "screenX": x, "screenY": y}
     
     oneJewelBefore = getJewelByPosition(currentJewel["x"]-1, currentJewel["y"], sameColor)
     oneJewelAfter = getJewelByPosition(currentJewel["x"]+1, currentJewel["y"], sameColor)
@@ -238,7 +236,6 @@ def findPatterns(currentJewel, sameColor):
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]-1, stateOfGridAll)
         possibleMoves[4].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelAboveAndOneAfter["screenX"], "moveFromScreenY": oneJewelAboveAndOneAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 4})
 
-
     #  ___O__  
     #  _O____
     #  ___X__
@@ -246,7 +243,6 @@ def findPatterns(currentJewel, sameColor):
     if twoJewelAbove and oneJewelAboveAndOneBefore and oneJewelBelow:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"], currentJewel["y"]-1, stateOfGridAll)
         possibleMoves[4].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelAboveAndOneBefore["screenX"], "moveFromScreenY": oneJewelAboveAndOneBefore["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 4})
-
 
     #  ___O__
     #  ___X__  
@@ -269,7 +265,6 @@ def findPatterns(currentJewel, sameColor):
     if oneJewelBefore and oneJewelBelowAndOneAfter and twoJewelAfter:
         jewelToMoveTo = getJewelByPosition(currentJewel["x"]+1, currentJewel["y"], stateOfGridAll)
         possibleMoves[4].append({"color": currentJewel["color"], "moveFromScreenX": oneJewelBelowAndOneAfter["screenX"], "moveFromScreenY": oneJewelBelowAndOneAfter["screenY"], "moveToScreenX": jewelToMoveTo["screenX"], "moveToScreenY": jewelToMoveTo["screenY"], "value": 4})
-
     
     #  _____O___  
     #  _O_X___O__
