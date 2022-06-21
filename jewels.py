@@ -33,7 +33,7 @@ print("Trying to find the game area on the screen automatically.")
 upperLeftCorner = pyautogui.locateCenterOnScreen("region_upper_left_corner.PNG", confidence=0.7, grayscale=True)
 lowerRightCorner = pyautogui.locateCenterOnScreen("region_lower_right_corner.PNG", confidence=0.9, grayscale=True)
 
-if upperLeftCorner == None:
+if upperLeftCorner == None or lowerRightCorner == None:
     print("Could not find upper left corner automatically.\n(To make this work you need to redo the screenshots of both corners in the folder of this application.)")
 
     upperLeftCornerSelected = input("Switching to manual mode:\nPosition your mouse at the upper left corner of the game and press ENTER.")
