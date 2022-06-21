@@ -1,13 +1,13 @@
-import pyautogui
-import mouse
 import time
-import keyboard
 import sys
 from collections import defaultdict
 
-from PIL import ImageGrab, Image 
+import pyautogui
 import numpy as np
+from PIL import ImageGrab, Image 
 import cv2
+import keyboard
+import mouse
 
 # Game this bot was made for:
 # https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel
