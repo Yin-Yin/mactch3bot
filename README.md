@@ -20,6 +20,8 @@ Following external dependencies need to be installed (just install them with pip
 You need to have the game open in a browser for the bot to detect it. Then have a command window open and run the script by typing `python2 jewels.py`.
 
 The script will try to find the game area by finding the upper left and lower right corners of the game area. There are two screenshots in this folder, that it is looking for in the screen. They are `region_lower_right_corner.png` and `region_upper_left_corner.png`. As the background is different if the window is somewhere else, you might need to redo the screenshots. If it fails the program will ask you to place the mouse on these points to get the position. 
+![jewels_game_state_corners](https://user-images.githubusercontent.com/13853689/174763686-90956574-cc0b-46c6-81f5-3e80f097cb27.png)
+
 
 The programm will then try to determine the color of certain pixels in the screen. And then get a color by looking at the rgb (red/green/blue) of this pixel. If there are a lot of colors that are not found, you can adjust these values. It is done in this function:
 ```
