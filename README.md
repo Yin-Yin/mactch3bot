@@ -17,7 +17,8 @@ Following external dependencies need to be installed (just install them with pip
 - `mouse`
 
 # Usage
-You need to have the game open in a browser for the bot to detect it. Then have a command window open and run the script by typing `python2 jewels.py`.
+You need to have the game open in a browser for the bot to detect it. Then have a command window open and run the script by typing `python2 jewels.py`. 
+IMPORTANT: To quit the script, keep `q` pressed or move the mouse into one of the corners (this will trigger the pyautogui failsafe). (or if you are quick engough go to the console and press `ctrl + c`)
 
 The script will try to find the game area by finding the upper left and lower right corners of the game area. There are two screenshots in this folder, that it is looking for in the screen. They are `region_lower_right_corner.png` and `region_upper_left_corner.png`. As the background is different if the window is somewhere else, you might need to redo the screenshots. If it fails the program will ask you to place the mouse on these points to get the position. 
 
@@ -48,7 +49,7 @@ For debugging and to see where the programm takes it's color values from, put th
 - The bot first detects all the possible combinations on the board.
 - It chooses the move which affects the most jewels.
 
-# ImprovementsImprovements
+# Improvements
 So far the bot simply makes the first move that includes the most jewels. 
 To get a higher score, these steps could be done: 
     - Check the upper area for which jewels are there (these multiplier jewels) and then select the move which includes this color. 
