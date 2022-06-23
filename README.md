@@ -34,33 +34,12 @@ The script can try to find the game area by finding the upper left and lower rig
 
 For debugging and to see where the programm takes it's color values from, put the `showBoardScreenshot = False` to `True`.
 
-
-The programm will then try to determine the color of certain pixels in the screen. And then get a color by looking at the rgb (red/green/blue) of this pixel. If there are a lot of colors that are not found, you can adjust these values. It is done in this function:
-```
-def getColorSymbol(px):
-    # Adjust these values if the colors can't be found or have changed, etc. 
-    if (0 <= px[0] < 90) and (45 < px[1] < 130)  and (210 < px[2] <= 255):
-        return "blue"
-    if (150 < px[0] < 200) and (0 < px[1] < 35)  and (20 < px[2] < 70):
-        return "red"
-    if (0 < px[0] < 100) and (50 < px[1] < 255)  and (0 < px[2] < 140):
-        return "green"
-    if (150 < px[0] < 230) and (5 < px[1] < 95) and (140 < px[2] < 230):
-        return "teal"
-    if (200 < px[0] < 260) and (180 < px[1] < 260) and (0 <= px[2] < 120):
-        return "yellow"
-    if (150 < px[0] < 240) and (40 < px[1] < 120) and (0 <= px[2] < 120):
-        return "orange"
-    if (210 < px[0] < 256) and (200 < px[1] < 256) and (200 <= px[2] < 256):
-        return "white"
-    print("Color not found: RGB", px)
-    return None
-```
-
-
 # How it works
-- The bot first detects all the possible combinations on the board.
-- It chooses the move which affects the most jewels.
+- Determine the game area
+- Get the colors from pixels of the objects 
+- Match the RGB values to "colors"
+- Get all the possible combinations on the board
+- Choose the first move which affects the most jewels
 
 # Improvements
 So far the bot simply makes the first move that includes the most jewels. 
