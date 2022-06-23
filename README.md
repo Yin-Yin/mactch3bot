@@ -11,21 +11,6 @@ It also works more or less with these games (although it was not optimized for t
 - https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewelnew (not optimal as it can't click on the "next level" button and can not deal with the empty rows)
 - https://arcadespot.com/game/bejeweled-hd/ (could work better)
 
-# Game this bot was made for:
-# https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel
-# same as above, works pretty well https://kizi.com/games/microsoft-jewel 
-# why you not working ?? https://www.1001games.com/puzzle/jewel-shuffle
-# same as above, it should work better :/ 
-# https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewelnew
-# https://www.1001games.com/puzzle/jewels-blitz-5
-# not at all https://www.1001games.com/match-3/candy-rain
-# works acutally pretty well :D https://www.1001games.com/match-3/aquablitz
-# not https://www.match3games.com/game/Bejeweled
-# not really good https://arcadespot.com/game/bejeweled-hd/
-# okayish https://www.match3games.com/game/Jewel+Monsters
-# pretty well https://www.match3games.com/game/Flat+Jewels
-# another clone https://keygames.com/game/flat-jewels-match-3/
-
 # Requirements
 - Python3
 - Windows (AFAIK pyautogui, which is used for detecting the game area and clicking needs Windows, these can be replaced however)
