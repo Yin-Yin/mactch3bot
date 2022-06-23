@@ -9,14 +9,36 @@ import cv2
 import keyboard
 import mouse
 
-# Game this bot was made for:
-# https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel
 
 # CONFIG
-durationBetweenInterations = 0.8
-numberOJewelsInARow = 8
-numberOJewelsInAColumn = 8
-# we add an offset to catch the color somewhere in the middle of the jewel
+# Adjust the number of rows and columns of the game here
+numberOJewelsInARow = 7
+numberOJewelsInAColumn = 7
+
+# Some games require you to drag the jewels/objects
+draggingMode = False
+
+# Adjust the speed of the bot by changing these values
+durationBetweenInterations = 0.2
+mouseClickDuration = 0.1
+mouseMoveDuration = 0.2
+mouseDragDuration = 0.3
+
+# This will take the colors as it finds them on the position. Can be tricky for matching as if the rgb value is only off by one (which is usually the case for many images) the matching won't work anymore. 
+autoColorStrictMode = True
+# This will try to detect the colors as much as possible, and if it does not find them it will take the RGB value as it is. 
+autoColorMode = True
+# Relevant for some games where you need to find threes only. 
+matchOnlyThrees= False
+
+# For this to work you need to adjust the screenshots of both corners (top left and bottom right) and replace them in the folder where the script is. 
+autoDetectionOfGameArea = True
+# This shows the area where the programm is looking for the game and gets the color values from. Notice the white pixels. That is actually the position where the color is taken from
+showBoardScreenshot = True
+
+# This sets the offset where to start taking the colors from automatically. Should be enough for most cases. (it takes half of the distance between each section)
+autoOffset = True
+# Add an offset to catch the color somewhere in the middle of the jewel. Only is taken into account when autoOffset = False, only really neccessary, when you are detecting the game area automatically
 offsetToStartLokkingForFirstRow = 70 
 offsetToStartLokkingForFirstColumn = 60
 # DEBUGGING
@@ -24,19 +46,25 @@ offsetToStartLokkingForFirstColumn = 60
 printCoordinatesArray = False
 # Sometimes not all colors can be found
 printAllColorsIncludingMissing = False
-showBoardScreenshot = False
 # to read pixels pisition and color on screen you can use this in a python3 session: 
 # pyautogui.displayMousePosition()
 
 
-print("Trying to find the game area on the screen automatically.")
-upperLeftCorner = pyautogui.locateCenterOnScreen("region_upper_left_corner.PNG", confidence=0.7, grayscale=True)
-lowerRightCorner = pyautogui.locateCenterOnScreen("region_lower_right_corner.PNG", confidence=0.9, grayscale=True)
+
+
+upperLeftCorner = None
+lowerRightCorner = None
+if not autoDetectionOfGameArea:
+    print("Trying to find the game area on the screen automatically.")
+if autoDetectionOfGameArea:
+    upperLeftCorner = pyautogui.locateCenterOnScreen("region_upper_left_corner.PNG", confidence=0.7, grayscale=True)
+    lowerRightCorner = pyautogui.locateCenterOnScreen("region_lower_right_corner.PNG", confidence=0.9, grayscale=True)
 
 if upperLeftCorner == None or lowerRightCorner == None:
-    print("Could not find upper left corner automatically.\n(To make this work you need to redo the screenshots of both corners in the folder of this application.)")
+    if autoDetectionOfGameArea:
+        print("Could not find upper left corner automatically.\n(To make this work you need to redo the screenshots of both corners in the folder of this application.)\nSwitching to manual mode:")
 
-    upperLeftCornerSelected = input("Switching to manual mode:\nPosition your mouse at the upper left corner of the game and press ENTER.")
+    upperLeftCornerSelected = input("Position your mouse at the upper left corner of the game and press ENTER.")
     if upperLeftCornerSelected == '':  # hitting enter == ''  empty string
         upperLeftCorner = pyautogui.position()
         print("Upper Left Corner set to:", upperLeftCorner)
@@ -51,6 +79,10 @@ gameAreaWidth = lowerRightCorner.x - upperLeftCorner.x
 gameAreaHeight = lowerRightCorner.y - upperLeftCorner.y
 gameAreaStepsOfJewelsX = gameAreaWidth / numberOJewelsInARow
 gameAreaStepsOfJewelsY = gameAreaHeight / numberOJewelsInAColumn
+
+if autoOffset:
+    offsetToStartLokkingForFirstRow = int(gameAreaWidth / (numberOJewelsInARow * 2))
+    offsetToStartLokkingForFirstColumn = int(gameAreaHeight / (numberOJewelsInAColumn * 2))
 
 print("upperLeftCorner", upperLeftCorner)
 print("lowerRightCorner", lowerRightCorner)
@@ -84,6 +116,8 @@ def getAdditionalColors(px):
             colorFinding.add(px)
 
 def getColorSymbol(px):
+    if autoColorStrictMode:
+        return px
     # Adjust these values if the colors can't be found or have changed, etc. 
     if (0 <= px[0] < 90) and (45 < px[1] < 130)  and (210 < px[2] <= 255):
         return "blue"
@@ -100,6 +134,8 @@ def getColorSymbol(px):
     if (210 < px[0] < 256) and (200 < px[1] < 256) and (200 <= px[2] < 256):
         return "white"
     print("Color not found: RGB", px)
+    if autoColorMode: 
+        return px
     return None
 
 def updateBoardView():
@@ -137,10 +173,13 @@ def addYOffset(y):
     return y + upperLeftCorner.y 
 
 def clickAt(x,y):
-    pyautogui.click(addXOffset(x),addYOffset(y), interval=0.2)
+    pyautogui.click(addXOffset(x),addYOffset(y), duration=mouseClickDuration)
 
 def moveMouseTo(x,y):
-    pyautogui.moveTo(addXOffset(x),addYOffset(y), duration=0.1)
+    pyautogui.moveTo(addXOffset(x),addYOffset(y), duration=mouseMoveDuration)
+
+def dragMouseTo(x, y):
+    pyautogui.dragTo(addXOffset(x),addYOffset(y), duration=mouseDragDuration)
 
 def getJewelByPosition(x, y, jewels):
     for i in range(len(jewels)):
@@ -410,23 +449,43 @@ def selectHighestMove():
         print("Possible moves with 4:", len(possibleMoves[4]))
         print("Possible moves with 3:", len(possibleMoves[3]))
         clickAt(possibleMoves[5][0]['moveFromScreenX'], possibleMoves[5][0]['moveFromScreenY'])
-        clickAt(possibleMoves[5][0]['moveToScreenX'], possibleMoves[5][0]['moveToScreenY'])
+        if draggingMode:
+            dragMouseTo(possibleMoves[5][0]['moveToScreenX'], possibleMoves[5][0]['moveToScreenY'])
+        else:
+            clickAt(possibleMoves[5][0]['moveToScreenX'], possibleMoves[5][0]['moveToScreenY'])
         moves += 1
         return
     if 0 < len(possibleMoves[4]):
         print("Possible moves with 4:", len(possibleMoves[4]))
         print("Possible moves with 3:", len(possibleMoves[3]))
         clickAt(possibleMoves[4][0]['moveFromScreenX'], possibleMoves[4][0]['moveFromScreenY'])
-        clickAt(possibleMoves[4][0]['moveToScreenX'], possibleMoves[4][0]['moveToScreenY'])
+        if draggingMode:
+            dragMouseTo(possibleMoves[4][0]['moveToScreenX'], possibleMoves[4][0]['moveToScreenY'])
+        else:
+            clickAt(possibleMoves[4][0]['moveToScreenX'], possibleMoves[4][0]['moveToScreenY'])
         moves += 1
         return
     if 0 < len(possibleMoves[3]):
         print("Possible moves with 3:", len(possibleMoves[3]))
         clickAt(possibleMoves[3][0]['moveFromScreenX'], possibleMoves[3][0]['moveFromScreenY'])
-        clickAt(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+        if draggingMode:
+            dragMouseTo(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+        else:
+            clickAt(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
         moves += 1
     else:
         print("Currently no possible moves.")
+
+def matchThrees():
+    global moves
+    if 0 < len(possibleMoves[3]):
+        print("Possible moves with 3:", len(possibleMoves[3]))
+        clickAt(possibleMoves[3][0]['moveFromScreenX'], possibleMoves[3][0]['moveFromScreenY'])
+        if draggingMode:
+            dragMouseTo(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+        else:
+            clickAt(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+        moves += 1
 
 if showBoardScreenshot:
     updateBoardView()
@@ -448,7 +507,10 @@ while True:
     print(np.array(debugStateOfGridColors))
     print("Moves made so far:", moves)
     findMatches()
-    selectHighestMove()
+    if matchOnlyThrees:
+        matchThrees()
+    else:
+        selectHighestMove()
 
     # To be ready for next iteration
     stateOfGrid = []
