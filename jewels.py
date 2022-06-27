@@ -1,4 +1,5 @@
 import time
+import random
 import sys
 from collections import defaultdict
 
@@ -9,35 +10,36 @@ import cv2
 import keyboard
 import mouse
 
+# Optimized for this game https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel 
 
 # CONFIG
 # Adjust the number of rows and columns of the game here
-numberOJewelsInARow = 7
-numberOJewelsInAColumn = 7
+numberOJewelsInARow = 8
+numberOJewelsInAColumn = 8
 
 # Some games require you to drag the jewels/objects
 draggingMode = False
 
 # Adjust the speed of the bot by changing these values
-durationBetweenInterations = 0.2
+durationBetweenInterations = 0.8
 mouseClickDuration = 0.1
 mouseMoveDuration = 0.2
 mouseDragDuration = 0.3
 
 # This will take the colors as it finds them on the position. Can be tricky for matching as if the rgb value is only off by one (which is usually the case for many images) the matching won't work anymore. 
-autoColorStrictMode = True
+autoColorStrictMode = False
 # This will try to detect the colors as much as possible, and if it does not find them it will take the RGB value as it is. 
-autoColorMode = True
+autoColorMode = False
 # Relevant for some games where you need to find threes only. 
-matchOnlyThrees= False
+matchOnlyThrees= True
 
 # For this to work you need to adjust the screenshots of both corners (top left and bottom right) and replace them in the folder where the script is. 
 autoDetectionOfGameArea = True
 # This shows the area where the programm is looking for the game and gets the color values from. Notice the white pixels. That is actually the position where the color is taken from
-showBoardScreenshot = True
+showBoardScreenshot = False
 
 # This sets the offset where to start taking the colors from automatically. Should be enough for most cases. (it takes half of the distance between each section)
-autoOffset = True
+autoOffset = False
 # Add an offset to catch the color somewhere in the middle of the jewel. Only is taken into account when autoOffset = False, only really neccessary, when you are detecting the game area automatically
 offsetToStartLokkingForFirstRow = 70 
 offsetToStartLokkingForFirstColumn = 60
@@ -51,10 +53,9 @@ printAllColorsIncludingMissing = False
 
 
 
-
 upperLeftCorner = None
 lowerRightCorner = None
-if not autoDetectionOfGameArea:
+if autoDetectionOfGameArea:
     print("Trying to find the game area on the screen automatically.")
 if autoDetectionOfGameArea:
     upperLeftCorner = pyautogui.locateCenterOnScreen("region_upper_left_corner.PNG", confidence=0.7, grayscale=True)
@@ -133,7 +134,7 @@ def getColorSymbol(px):
         return "orange"
     if (210 < px[0] < 256) and (200 < px[1] < 256) and (200 <= px[2] < 256):
         return "white"
-    print("Color not found: RGB", px)
+    # print("Color not found: RGB", px)
     if autoColorMode: 
         return px
     return None
@@ -467,11 +468,14 @@ def selectHighestMove():
         return
     if 0 < len(possibleMoves[3]):
         print("Possible moves with 3:", len(possibleMoves[3]))
-        clickAt(possibleMoves[3][0]['moveFromScreenX'], possibleMoves[3][0]['moveFromScreenY'])
+        selectedMove = random.choice(possibleMoves[3])
+        # does a random selection get lower points on average?
+        # selectedMove = possibleMoves[3][0]
+        clickAt(selectedMove['moveFromScreenX'], selectedMove['moveFromScreenY'])
         if draggingMode:
-            dragMouseTo(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+            dragMouseTo(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         else:
-            clickAt(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+            clickAt(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         moves += 1
     else:
         print("Currently no possible moves.")
