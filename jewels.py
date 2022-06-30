@@ -11,39 +11,39 @@ import keyboard
 import mouse
 
 # Optimized for this game https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel 
-
+url = None
 # CONFIG
 # Adjust the number of rows and columns of the game here
 numberOJewelsInARow = 8
 numberOJewelsInAColumn = 8
-
+# Relevant for some games where you need to find threes only. 
+matchOnlyThrees= False
 # Some games require you to drag the jewels/objects
-draggingMode = False
-
+draggingMode = True
 # Adjust the speed of the bot by changing these values
-durationBetweenInterations = 0.8
+durationBetweenInterations = 0.4
 mouseClickDuration = 0.1
 mouseMoveDuration = 0.2
 mouseDragDuration = 0.3
 
+
 # This will take the colors as it finds them on the position. Can be tricky for matching as if the rgb value is only off by one (which is usually the case for many images) the matching won't work anymore. 
-autoColorStrictMode = False
+autoColorStrictMode = True
+# The range in which to go up or down with the rgb values
+checkingRange = 40
 # This will try to detect the colors as much as possible, and if it does not find them it will take the RGB value as it is. 
-autoColorMode = False
-# Relevant for some games where you need to find threes only. 
-matchOnlyThrees= True
-
+autoColorMode = True
 # For this to work you need to adjust the screenshots of both corners (top left and bottom right) and replace them in the folder where the script is. 
-autoDetectionOfGameArea = True
-# This shows the area where the programm is looking for the game and gets the color values from. Notice the white pixels. That is actually the position where the color is taken from
-showBoardScreenshot = False
-
+autoDetectionOfGameArea = False
 # This sets the offset where to start taking the colors from automatically. Should be enough for most cases. (it takes half of the distance between each section)
-autoOffset = False
+autoOffset = True
 # Add an offset to catch the color somewhere in the middle of the jewel. Only is taken into account when autoOffset = False, only really neccessary, when you are detecting the game area automatically
 offsetToStartLokkingForFirstRow = 70 
 offsetToStartLokkingForFirstColumn = 60
+
 # DEBUGGING
+# This shows the area where the programm is looking for the game and gets the color values from. Notice the white pixels. That is actually the position where the color is taken from
+showBoardScreenshot = False
 # Prints out a numpy array with all the y and y positions of each jewel so it is easier to grasp what is going on and from where to wehre move a jewel
 printCoordinatesArray = False
 # Sometimes not all colors can be found
@@ -51,6 +51,94 @@ printAllColorsIncludingMissing = False
 # to read pixels pisition and color on screen you can use this in a python3 session: 
 # pyautogui.displayMousePosition()
 
+presets = {'MicrosoftJewels': 
+            {
+                url: "https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel",
+                numberOJewelsInARow: 8,
+                numberOJewelsInAColumn: 8,
+                draggingMode: False,
+                autoColorStrictMode: False,
+                autoColorMode: False,
+                autoOffset: False,
+                offsetToStartLokkingForFirstRow: 70,
+                offsetToStartLokkingForFirstColumn: 60,
+
+            }, 
+            'BejeweledHD': {
+                url: "https://arcadespot.com/game/bejeweled-hd/",
+                numberOJewelsInARow: 8,
+                numberOJewelsInAColumn: 8,
+                draggingMode: False,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 55,
+                autoOffset: True,
+                durationBetweenInterations: 0.4,
+                mouseClickDuration: 0.2,
+            }, 
+            'BejeweledHDTime': {
+                url: "https://arcadespot.com/game/bejeweled-hd/",
+                numberOJewelsInARow: 8,
+                numberOJewelsInAColumn: 8,
+                draggingMode: False,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 65,
+                durationBetweenInterations: 0,
+                mouseClickDuration: 0.01,
+                autoOffset: True,
+            }, 
+            'JewelMonsters': {
+                url: "https://www.match3games.com/game/Jewel+Monsters",
+                numberOJewelsInARow: 8,
+                numberOJewelsInAColumn: 8,
+                draggingMode: True,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 65,
+                durationBetweenInterations: 0,
+                mouseClickDuration: 0.01,
+                autoOffset: True,
+            }, 
+            'CandyCrusher': {
+                url: "https://kizi.com/games/candy-crusher",
+                numberOJewelsInARow: 6, # starts with 6 but gets more
+                numberOJewelsInAColumn: 6,
+                draggingMode: False,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 40,
+                durationBetweenInterations: 0.4,
+                mouseClickDuration: 0.1,
+                autoOffset: True,
+            }, 
+            'CandyCrush': {
+                url: "https://simple.game/play/candy-crush/",
+                numberOJewelsInARow: 7, # starts with 6 but gets more
+                numberOJewelsInAColumn: 7,
+                draggingMode: False,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 40,
+                durationBetweenInterations: 0.4,
+                mouseClickDuration: 0.1,
+                autoOffset: True,
+            }, 
+            'CandyMatch3': {
+                url: "https://simple.game/play/candy-match-3/",
+                numberOJewelsInARow: 10,
+                numberOJewelsInAColumn: 6,
+                draggingMode: True,
+                autoColorStrictMode: True,
+                autoColorMode: True,
+                checkingRange: 40,
+                durationBetweenInterations: 0.4,
+                mouseClickDuration: 0.1,
+                autoOffset: True,
+            }
+
+            
+        }
 
 
 upperLeftCorner = None
@@ -105,6 +193,7 @@ stateOfGridAll = []
 debugStateOfGridColors = []
 debugStateOfGridPositions = []
 possibleMoves = defaultdict(list)
+detectedColorList = []
 moves = 0
 colorFinding = set()
 
@@ -116,9 +205,22 @@ def getAdditionalColors(px):
         else:
             colorFinding.add(px)
 
+def approximateColor(px): 
+    global checkingRange
+    for i in range(len(detectedColorList)):
+        detectedColor = detectedColorList[i]
+        if (detectedColor[0] - checkingRange < px[0] < detectedColor[0] + checkingRange) and (detectedColor[1] - checkingRange < px[1] < detectedColor[1] + checkingRange) and (detectedColor[2] - checkingRange < px[2] < detectedColor[2] + checkingRange):
+            #print("Same color detected, differences:", detectedColor[0]-px[0], detectedColor[1]-px[1],detectedColor[2]-px[2])
+            # print (f'color matched {detectedColor[0]} {detectedColor[1]} {detectedColor[2]}')
+            # return (f'color{i}')
+            return i 
+    #print("could not detect", px)
+    detectedColorList.append(px)
+    return px
+
 def getColorSymbol(px):
     if autoColorStrictMode:
-        return px
+        return approximateColor(px)
     # Adjust these values if the colors can't be found or have changed, etc. 
     if (0 <= px[0] < 90) and (45 < px[1] < 130)  and (210 < px[2] <= 255):
         return "blue"
@@ -136,7 +238,7 @@ def getColorSymbol(px):
         return "white"
     # print("Color not found: RGB", px)
     if autoColorMode: 
-        return px
+        return approximateColor(px)
     return None
 
 def updateBoardView():
@@ -449,28 +551,31 @@ def selectHighestMove():
         print("Possible moves with 5:", len(possibleMoves[5]))
         print("Possible moves with 4:", len(possibleMoves[4]))
         print("Possible moves with 3:", len(possibleMoves[3]))
-        clickAt(possibleMoves[5][0]['moveFromScreenX'], possibleMoves[5][0]['moveFromScreenY'])
+        selectedMove = random.choice(possibleMoves[5])
+        clickAt(selectedMove['moveFromScreenX'], selectedMove['moveFromScreenY'])
         if draggingMode:
-            dragMouseTo(possibleMoves[5][0]['moveToScreenX'], possibleMoves[5][0]['moveToScreenY'])
+            dragMouseTo(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         else:
-            clickAt(possibleMoves[5][0]['moveToScreenX'], possibleMoves[5][0]['moveToScreenY'])
+            clickAt(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         moves += 1
         return
     if 0 < len(possibleMoves[4]):
         print("Possible moves with 4:", len(possibleMoves[4]))
         print("Possible moves with 3:", len(possibleMoves[3]))
-        clickAt(possibleMoves[4][0]['moveFromScreenX'], possibleMoves[4][0]['moveFromScreenY'])
+        selectedMove = random.choice(possibleMoves[4])
+        clickAt(selectedMove['moveFromScreenX'], selectedMove['moveFromScreenY'])
         if draggingMode:
-            dragMouseTo(possibleMoves[4][0]['moveToScreenX'], possibleMoves[4][0]['moveToScreenY'])
+            dragMouseTo(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         else:
-            clickAt(possibleMoves[4][0]['moveToScreenX'], possibleMoves[4][0]['moveToScreenY'])
+            clickAt(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         moves += 1
         return
     if 0 < len(possibleMoves[3]):
         print("Possible moves with 3:", len(possibleMoves[3]))
-        selectedMove = random.choice(possibleMoves[3])
         # does a random selection get lower points on average?
-        # selectedMove = possibleMoves[3][0]
+        selectedMove = random.choice(possibleMoves[3])
+        # selectedMove = possibleMoves[3][0] # get first
+        # selectedMove = possibleMoves[3][-1] # get last
         clickAt(selectedMove['moveFromScreenX'], selectedMove['moveFromScreenY'])
         if draggingMode:
             dragMouseTo(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
@@ -484,11 +589,12 @@ def matchThrees():
     global moves
     if 0 < len(possibleMoves[3]):
         print("Possible moves with 3:", len(possibleMoves[3]))
-        clickAt(possibleMoves[3][0]['moveFromScreenX'], possibleMoves[3][0]['moveFromScreenY'])
+        selectedMove = random.choice(possibleMoves[3])
+        clickAt(selectedMove['moveFromScreenX'], selectedMove['moveFromScreenY'])
         if draggingMode:
-            dragMouseTo(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+            dragMouseTo(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         else:
-            clickAt(possibleMoves[3][0]['moveToScreenX'], possibleMoves[3][0]['moveToScreenY'])
+            clickAt(selectedMove['moveToScreenX'], selectedMove['moveToScreenY'])
         moves += 1
 
 if showBoardScreenshot:
@@ -514,6 +620,8 @@ while True:
     if matchOnlyThrees:
         matchThrees()
     else:
+        # print("")
+        
         selectHighestMove()
 
     # To be ready for next iteration

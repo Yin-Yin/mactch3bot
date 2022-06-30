@@ -5,11 +5,18 @@ The bot is optimized for this game (works best when it is dragged to half of the
 
 It also works more or less with these games (although it was not optimized for them):
 - https://www.match3games.com/game/Flat+Jewels (works pretty well, as the jewels are flat, can misinterpret these areas without jewels though)
+- https://kizi.com/games/candy-crusher works pretty well with autoColorStrictMode
+- https://simple.game/play/candy-crush/ (works quite well with autoColorStrictMode)
 - https://www.1001games.com/match-3/aquablitz (works quite well)
 - https://www.match3games.com/game/Jewel+Monsters (works roughly)
-- https://kizi.com/games/jewel-shuffle (should work better as the jewels are similar)
+- https://kizi.com/games/new-year-pudding-match okay
+- https://kizi.com/games/jewel-shuffle (pretty well)
 - https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewelnew (not optimal as it can't click on the "next level" button and can not deal with the empty rows)
 - https://arcadespot.com/game/bejeweled-hd/ (could work better)
+- https://simple.game/play/amazing-jewel/
+- https://simple.game/play/skydom/
+- https://simple.game/play/candy-rain/
+- about the history of these games: https://medium.com/@john_23522/a-brief-history-of-match-three-games-31233dcdfcc5
 
 ## Requirements
 - Python3
@@ -22,6 +29,15 @@ Following external dependencies need to be installed (just install them with pip
 - `cv2`
 - `keyboard`
 - `mouse`
+
+For the AI version (at jewelsAI.py)
+- `pytesseract`
+For the recognition of the automatic numbering pytesseract is used. You need to install tesseract first for this.
+Official website for it:
+https://tesseract-ocr.github.io/tessdoc/Downloads.html
+Available Download of the latest version:
+https://github.com/UB-Mannheim/tesseract/wiki
+Add tesseract to the path and change the line `pytesseract.pytesseract.tesseract_cmd = ""` to the installation of your tesseract installation.
 
 ## Usage
 IMPORTANT: To quit the script, keep `q` pressed (hint: keep it pressed for one or two seconds for it to work) or move the mouse into one of the corners (this will trigger the pyautogui failsafe). (Or if you are quick engough (depending on the delay between iterations) `strg + tab` to the console and press `ctrl + c`.)
