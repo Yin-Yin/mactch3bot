@@ -30,6 +30,15 @@ Following external dependencies need to be installed (just install them with pip
 - `keyboard`
 - `mouse`
 
+```
+  pip install numpy
+  pip isntall Keyboard
+  pip install Mouse
+  pip install pyautogui
+  pip install Pillow
+  pip install opencv-python
+```
+
 For the AI version (at jewelsAI.py)
 - `pytesseract`
 For the recognition of the automatic numbering pytesseract is used. You need to install tesseract first for this.
