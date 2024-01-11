@@ -32,7 +32,7 @@ Following external dependencies need to be installed (just install them with pip
 
 ```
   pip install numpy
-  pip isntall Keyboard
+  pip install Keyboard
   pip install Mouse
   pip install pyautogui
   pip install Pillow
