@@ -2,6 +2,7 @@ import time
 import random
 import sys
 from collections import defaultdict
+# from turtle import tracer
 
 import pyautogui
 import numpy as np
@@ -13,6 +14,8 @@ import mouse
 # Optimized for this game https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel 
 url = None
 # CONFIG
+usePreset = 'BejeweledHD'
+# usePreset = None
 # Adjust the number of rows and columns of the game here
 numberOJewelsInARow = 8
 numberOJewelsInAColumn = 8
@@ -21,10 +24,10 @@ matchOnlyThrees= False
 # Some games require you to drag the jewels/objects
 draggingMode = True
 # Adjust the speed of the bot by changing these values
-durationBetweenInterations = 0.4
-mouseClickDuration = 0.1
-mouseMoveDuration = 0.2
-mouseDragDuration = 0.3
+durationBetweenInterations = 0.01
+mouseClickDuration = 0.01
+mouseMoveDuration = 0.02
+mouseDragDuration = 0.03
 
 
 # This will take the colors as it finds them on the position. Can be tricky for matching as if the rgb value is only off by one (which is usually the case for many images) the matching won't work anymore. 
@@ -51,94 +54,111 @@ printAllColorsIncludingMissing = False
 # to read pixels pisition and color on screen you can use this in a python3 session: 
 # pyautogui.displayMousePosition()
 
-presets = {'MicrosoftJewels': 
-            {
-                url: "https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel",
-                numberOJewelsInARow: 8,
-                numberOJewelsInAColumn: 8,
-                draggingMode: False,
-                autoColorStrictMode: False,
-                autoColorMode: False,
-                autoOffset: False,
-                offsetToStartLokkingForFirstRow: 70,
-                offsetToStartLokkingForFirstColumn: 60,
+presets = {
+    'MicrosoftJewels': {
+        "url": "https://games.ca.zone.msn.com/gameplayer/gameplayerHTML.aspx?game=msjewel",
+        "numberOJewelsInARow": 8,
+        "numberOJewelsInAColumn": 8,
+        "draggingMode": False,
+        "autoColorStrictMode": False,
+        "autoColorMode": False,
+        "autoOffset": False,
+        "offsetToStartLokkingForFirstRow": 70,
+        "offsetToStartLokkingForFirstColumn": 60,
 
-            }, 
-            'BejeweledHD': {
-                url: "https://arcadespot.com/game/bejeweled-hd/",
-                numberOJewelsInARow: 8,
-                numberOJewelsInAColumn: 8,
-                draggingMode: False,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 55,
-                autoOffset: True,
-                durationBetweenInterations: 0.4,
-                mouseClickDuration: 0.2,
-            }, 
-            'BejeweledHDTime': {
-                url: "https://arcadespot.com/game/bejeweled-hd/",
-                numberOJewelsInARow: 8,
-                numberOJewelsInAColumn: 8,
-                draggingMode: False,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 65,
-                durationBetweenInterations: 0,
-                mouseClickDuration: 0.01,
-                autoOffset: True,
-            }, 
-            'JewelMonsters': {
-                url: "https://www.match3games.com/game/Jewel+Monsters",
-                numberOJewelsInARow: 8,
-                numberOJewelsInAColumn: 8,
-                draggingMode: True,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 65,
-                durationBetweenInterations: 0,
-                mouseClickDuration: 0.01,
-                autoOffset: True,
-            }, 
-            'CandyCrusher': {
-                url: "https://kizi.com/games/candy-crusher",
-                numberOJewelsInARow: 6, # starts with 6 but gets more
-                numberOJewelsInAColumn: 6,
-                draggingMode: False,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 40,
-                durationBetweenInterations: 0.4,
-                mouseClickDuration: 0.1,
-                autoOffset: True,
-            }, 
-            'CandyCrush': {
-                url: "https://simple.game/play/candy-crush/",
-                numberOJewelsInARow: 7, # starts with 6 but gets more
-                numberOJewelsInAColumn: 7,
-                draggingMode: False,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 40,
-                durationBetweenInterations: 0.4,
-                mouseClickDuration: 0.1,
-                autoOffset: True,
-            }, 
-            'CandyMatch3': {
-                url: "https://simple.game/play/candy-match-3/",
-                numberOJewelsInARow: 10,
-                numberOJewelsInAColumn: 6,
-                draggingMode: True,
-                autoColorStrictMode: True,
-                autoColorMode: True,
-                checkingRange: 40,
-                durationBetweenInterations: 0.4,
-                mouseClickDuration: 0.1,
-                autoOffset: True,
-            }
+    }, 
+    'BejeweledHD': {
+        "url": "https://arcadespot.com/game/bejeweled-hd/",
+        "numberOJewelsInARow": 8,
+        "numberOJewelsInAColumn": 8,
+        "draggingMode": False,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 55,
+        "autoOffset": True,
+        "durationBetweenInterations": 0.4,
+        "mouseClickDuration": 0.2,
+    }, 
+    'BejeweledHDTime': {
+        "url": "https://arcadespot.com/game/bejeweled-hd/",
+        "numberOJewelsInARow": 8,
+        "numberOJewelsInAColumn": 8,
+        "draggingMode": False,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 30,
+        "durationBetweenInterations": 0.01,
+        "mouseClickDuration": 0.01,
+        "autoOffset": True,
+    }, 
+    'JewelMonsters': {
+        "url": "https://www.match3games.com/game/Jewel+Monsters",
+        "numberOJewelsInARow": 8,
+        "numberOJewelsInAColumn": 8,
+        "draggingMode": True,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 65,
+        "durationBetweenInterations": 0,
+        "mouseClickDuration": 0.01,
+        "autoOffset": True,
+    }, 
+    'CandyCrusher': {
+        "url": "https://kizi.com/games/candy-crusher",
+        "numberOJewelsInARow": 6, # starts with 6 but gets more
+        "numberOJewelsInAColumn": 6,
+        "draggingMode": False,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 40,
+        "durationBetweenInterations": 0.4,
+        "mouseClickDuration": 0.1,
+        "autoOffset": True,
+    }, 
+    'CandyCrush': {
+        "url": "https://simple.game/play/candy-crush/",
+        "numberOJewelsInARow": 7, # starts with 6 but gets more
+        "numberOJewelsInAColumn": 7,
+        "draggingMode": False,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 40,
+        "durationBetweenInterations": 0.4,
+        "mouseClickDuration": 0.1,
+        "autoOffset": True,
+    }, 
+    'CandyMatch3': {
+        "url": "https://simple.game/play/candy-match-3/",
+        "numberOJewelsInARow": 10,
+        "numberOJewelsInAColumn": 6,
+        "draggingMode": True,
+        "autoColorStrictMode": True,
+        "autoColorMode": True,
+        "checkingRange": 40,
+        "durationBetweenInterations": 0.4,
+        "mouseClickDuration": 0.1,
+        "autoOffset": True,
+    }
 
-            
-        }
+    
+}
+
+if usePreset:
+    preset = presets[usePreset]
+    try:    
+        numberOJewelsInARow = preset["numberOJewelsInARow"]
+        numberOJewelsInAColumn = preset["numberOJewelsInAColumn"]
+        draggingMode = preset["draggingMode"]
+        autoColorStrictMode = preset["autoColorStrictMode"]
+        autoColorMode = preset["autoColorMode"]
+        autoOffset = preset["autoOffset"]
+        offsetToStartLokkingForFirstRow = preset["offsetToStartLokkingForFirstRow"]
+        offsetToStartLokkingForFirstColumn = preset["offsetToStartLokkingForFirstColumn"]
+        checkingRange = preset["checkingRange"]
+        durationBetweenInterations = preset["durationBetweenInterations"]
+        mouseClickDuration = preset["mouseClickDuration"]
+    except:
+        print("Could not find a preset value.")
 
 
 upperLeftCorner = None
